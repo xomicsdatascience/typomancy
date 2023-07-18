@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=60.2.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "typomancy"
+dynamic = ["version"]
+authors = [{name="Alexandre Hutton", email="50920802+AlexandreHutton@users.noreply.github.com"}]
+description = "Python package for converting input strings from HTML into the appropriate type indicated by typehints."
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/xomicsdatascience/typomancy"
+"Bug Tracker" = "https://github.com/xomicsdatascience/typomancy/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "typomancy.__version__"}
