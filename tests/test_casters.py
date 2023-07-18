@@ -1,5 +1,5 @@
 import unittest
-from typing import Union, Collection, Optional
+from typing import Union, Collection, Optional, Literal
 from typomancy.handlers import type_wrangler
 
 
@@ -197,4 +197,14 @@ class TestTypings(unittest.TestCase):
         value = ""
         cast = type_wrangler(value, Optional[int])
         self.assertTrue(cast is None)
+        return
+
+    def test_Literal(self):
+        value = "thing"
+        cast = type_wrangler(value, Literal["thing", "tjefj"])
+        self.assertEqual(value, cast)
+
+        cast = type_wrangler(value, Literal["sdfljksdf", "thing", "tjefj"])
+        self.assertEqual(value, cast)
+        self.assertRaises(TypeError, type_wrangler, (value, Literal["other_thing", "thingthing"]))
         return
