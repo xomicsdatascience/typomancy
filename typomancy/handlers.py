@@ -1,6 +1,6 @@
 from ast import literal_eval
 from collections import defaultdict as dd
-from typing import Union, Collection, Optional, Literal
+from typing import Union, Collection, Optional, Literal, Tuple
 from types import NoneType
 from collections import abc
 
@@ -149,6 +149,19 @@ def literal_cast(data: str, typecast):
         raise TypeError(f"Input string {data} is not one of the required string Literals: {typecast.__args__}")
 
 
+def tuple_cast(data: str, typecast):
+    # Tuple specifies what each entry of the tuple should be
+    split_data = split_with_escape(data, split_char=",", escape_char="\\")
+    if len(split_data) != len(typecast.__args__):
+        raise TypeError("The number of values in the input does not match the number indicated by the TypeHint")
+    cast_collection = []
+    for dat, tp in zip(split_data, typecast.__args__):
+        cast_collection.append(type_wrangler(dat, tp))
+    return tuple(cast_collection)
+
+
+
+
 def split_with_escape(str_to_split: str, split_char: str = ",", escape_char="\\") -> list[str]:
     idx_list = get_all_indices(str_to_split, split_char, escape_char)
     return split_at_indices(str_to_split, idx_list)
@@ -189,6 +202,7 @@ def _configure_cast_map():
     cast_map[abc.Collection] = cast_map[Collection]
     cast_map[Optional] = optional_cast
     cast_map[Literal] = literal_cast
+    cast_map[tuple] = tuple_cast
     return cast_map
 
 

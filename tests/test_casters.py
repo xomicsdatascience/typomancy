@@ -1,5 +1,5 @@
 import unittest
-from typing import Union, Collection, Optional, Literal
+from typing import Union, Collection, Optional, Literal, Tuple
 from typomancy.handlers import type_wrangler
 
 
@@ -207,4 +207,12 @@ class TestTypings(unittest.TestCase):
         cast = type_wrangler(value, Literal["sdfljksdf", "thing", "tjefj"])
         self.assertEqual(value, cast)
         self.assertRaises(TypeError, type_wrangler, (value, Literal["other_thing", "thingthing"]))
+        return
+
+    def test_Tuple(self):
+        value = "1, 2, a"
+        cast = type_wrangler(value, Tuple[int, float, str])
+        self.assertEqual(cast, (1,2,'a'))
+        self.assertRaises(TypeError, type_wrangler, (value, Tuple[int, float, float]))
+        self.assertRaises(TypeError, type_wrangler, (value, Tuple[int, int]))
         return
