@@ -1,5 +1,5 @@
 import unittest
-from typing import Union, Collection, Optional, Literal, Tuple
+from typing import Union, Collection, Optional, Literal, Tuple, Sequence
 from typomancy.handlers import type_wrangler
 
 
@@ -215,4 +215,15 @@ class TestTypings(unittest.TestCase):
         self.assertEqual(cast, (1,2,'a'))
         self.assertRaises(TypeError, type_wrangler, (value, Tuple[int, float, float]))
         self.assertRaises(TypeError, type_wrangler, (value, Tuple[int, int]))
+        return
+
+    def test_Sequnce(self):
+        value = "1,2,3,4"
+        cast = type_wrangler(value, Sequence[int])
+        self.assertEqual(cast, [1,2,3,4])
+        cast = type_wrangler(value, Sequence[str])
+        self.assertEqual(cast, ["1", "2", "3", "4"])
+        value = "1,a,2,b"
+        cast = type_wrangler(value, Sequence[Union[int, str]])
+        self.assertEqual(cast, [1, "a", 2, "b"])
         return

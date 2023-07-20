@@ -1,6 +1,6 @@
 from ast import literal_eval
 from collections import defaultdict as dd
-from typing import Union, Collection, Optional, Literal, Tuple
+from typing import Union, Collection, Optional, Literal, Tuple, Sequence
 from types import NoneType
 from collections import abc
 
@@ -160,6 +160,13 @@ def tuple_cast(data: str, typecast):
     return tuple(cast_collection)
 
 
+def sequence_cast(data: str, typecast):
+    # Sequence is an ordered Collection
+    # Collection casts to list, which is a sequence; just pass it to Collection
+    tmp_typ = Collection
+    if "__args__" in dir(typecast):
+        tmp_typ.__args__ = typecast.__args__
+    return type_wrangler(data, tmp_typ)
 
 
 def split_with_escape(str_to_split: str, split_char: str = ",", escape_char="\\") -> list[str]:
@@ -202,7 +209,10 @@ def _configure_cast_map():
     cast_map[abc.Collection] = cast_map[Collection]
     cast_map[Optional] = optional_cast
     cast_map[Literal] = literal_cast
+    cast_map[Tuple] = tuple_cast
     cast_map[tuple] = tuple_cast
+    cast_map[Sequence] = sequence_cast
+    cast_map[abc.Sequence] = cast_map[Sequence]
     return cast_map
 
 
