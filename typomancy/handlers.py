@@ -135,7 +135,7 @@ def collection_cast(data: str, typecast):
 
 def optional_cast(data: str, typecast):
     """Casts the input string to the optional argument. If the string is empty, returns None."""
-    if len(data) == 0:
+    if data is None or len(data) == 0:
         return None
     else:
         return type_wrangler(data, typecast.__args__[0])
