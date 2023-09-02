@@ -25,7 +25,7 @@ def type_wrangler(input_data: str,
     TypeError
         If the input_str could not be converted to the specified type.
     """
-    if typecast is str:
+    if type(input_data) is typecast or input_data is None:
         return input_data
     if _isbuiltin(typecast):
         # No need for anything fancy; builtins come with their own converters!
