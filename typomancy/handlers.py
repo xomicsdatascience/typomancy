@@ -94,15 +94,20 @@ def union_cast(data: str, typecast):
     """Attempts to cast data to one of the acceptable types listed in Union."""
     # Union is a list of acceptable types. Any of the possible arguments will work
     check_str = False
-    if NoneType in typecast.__args__:
-        return optional_cast(data, typecast)
     for typ in typecast.__args__:
         if typ is str:
             check_str = True
             continue
+        elif typ is None or typ is type(None):
+            if data is None or (isinstance(data, str) and len(data) == 0):
+                return None
         else:
             try:
                 cast_data = type_wrangler(data, typ)
+                # Check for literals
+                if type(typ) is type(Literal["0"]):
+                    # If data was not successfully cast, it will have raised an error; no need to re-check here
+                    return cast_data
                 if type(cast_data) == typ or issubclass(type(cast_data), typ):
                     return cast_data
             except TypeError:
@@ -116,7 +121,7 @@ def union_cast(data: str, typecast):
                 return cast_data
         except TypeError:
             pass
-    raise TypeError(f"Unable to convert input of type {type(data)} to {typecast}")
+    raise TypeError(f"Unable to convert input '{data}' of type {type(data)} to {typecast}")
 
 
 def collection_cast(data: str, typecast):
@@ -151,9 +156,12 @@ def literal_cast(data: str, typecast):
 
 def tuple_cast(data: str, typecast):
     # Tuple specifies what each entry of the tuple should be
-    split_data = split_with_escape(data, split_char=",", escape_char="\\")
-    if len(split_data) != len(typecast.__args__):
-        raise TypeError("The number of values in the input does not match the number indicated by the TypeHint")
+    if isinstance(data, str):
+        split_data = split_with_escape(data, split_char=",", escape_char="\\")
+        if len(split_data) != len(typecast.__args__):
+            raise TypeError("The number of values in the input does not match the number indicated by the TypeHint")
+    elif isinstance(data, Collection):
+        split_data = data
     cast_collection = []
     for dat, tp in zip(split_data, typecast.__args__):
         cast_collection.append(type_wrangler(dat, tp))
