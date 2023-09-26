@@ -25,16 +25,15 @@ def type_wrangler(input_data: str,
     TypeError
         If the input_str could not be converted to the specified type.
     """
-    if type(input_data) is typecast or input_data is None:
-        return input_data
+    if not isinstance(input_data, str) or input_data is None or typecast is str:
+        return input_data  # we only do casting from string; it gets too complicated otherwise
     if _isbuiltin(typecast):
         # No need for anything fancy; builtins come with their own converters!
         try:
-            if typecast is bool and isinstance(input_data, str):
+            if typecast is bool:
                 # JS has lower-case bools; need to check against that
                 input_data = input_data[0].upper() + input_data[1:].lower()
             cast_data = literal_eval(input_data)  # "13" resolves to int, even if it would be fine as a float
-
             try:
                 tmp_cast = typecast(cast_data)
                 if _isequal(cast_data, tmp_cast):  # if there's no loss of data, do conversion; otherwise fail
@@ -55,7 +54,7 @@ def type_wrangler(input_data: str,
             raise TypeError(f"Unable to convert input of type {type(input_data)} to {typecast}")
     elif _istyping(typecast):
         # Try to do casting
-        caster = cast_map[typecast.__origin__]
+        caster = cast_map[typecast.__name__]
         if caster is None:
             raise TypeError(f"Unable to convert input of type {type(input_data)} to {typecast}")
         cast_data = caster(input_data, typecast)
@@ -94,15 +93,23 @@ def union_cast(data: str, typecast):
     """Attempts to cast data to one of the acceptable types listed in Union."""
     # Union is a list of acceptable types. Any of the possible arguments will work
     check_str = False
-    if NoneType in typecast.__args__:
-        return optional_cast(data, typecast)
     for typ in typecast.__args__:
         if typ is str:
-            check_str = True
+            check_str = True  # str always works; check if none of the others work
+            continue
+        elif typ is None or typ is type(None):
+            if data is None or len(data) == 0:
+                return None
             continue
         else:
             try:
+                if isinstance(data, typ):
+                    return data
                 cast_data = type_wrangler(data, typ)
+                # Check for literals
+                if type(typ) is type(Literal["0"]):
+                    # If data was not successfully cast, it will have raised an error; no need to re-check here
+                    return cast_data
                 if type(cast_data) == typ or issubclass(type(cast_data), typ):
                     return cast_data
             except TypeError:
@@ -116,7 +123,7 @@ def union_cast(data: str, typecast):
                 return cast_data
         except TypeError:
             pass
-    raise TypeError(f"Unable to convert input of type {type(data)} to {typecast}")
+    raise TypeError(f"Unable to convert input '{data}' of type {type(data)} to {typecast}")
 
 
 def collection_cast(data: str, typecast):
@@ -125,7 +132,8 @@ def collection_cast(data: str, typecast):
     # First need to be able to convert input to Collection, regardless of elements
     # We don't know yet what the elements will be; assume strings.
     # Separate elements by ','; use \ as escape char.
-    split_data = split_with_escape(data, split_char=",", escape_char="\\")
+    if isinstance(data, str):
+        split_data = split_with_escape(data, split_char=",", escape_char="\\")
     cast_collection = []
     for entry in split_data:
         cast_entry = type_wrangler(entry, typecast.__args__[0])  # Collection only takes 1 arg
@@ -151,9 +159,12 @@ def literal_cast(data: str, typecast):
 
 def tuple_cast(data: str, typecast):
     # Tuple specifies what each entry of the tuple should be
-    split_data = split_with_escape(data, split_char=",", escape_char="\\")
-    if len(split_data) != len(typecast.__args__):
-        raise TypeError("The number of values in the input does not match the number indicated by the TypeHint")
+    if isinstance(data, str):
+        split_data = split_with_escape(data, split_char=",", escape_char="\\")
+        if len(split_data) != len(typecast.__args__):
+            raise TypeError("The number of values in the input does not match the number indicated by the TypeHint")
+    elif isinstance(data, Collection):
+        split_data = data
     cast_collection = []
     for dat, tp in zip(split_data, typecast.__args__):
         cast_collection.append(type_wrangler(dat, tp))
@@ -204,15 +215,12 @@ def split_at_indices(str_to_split: str, indices: list) -> list[str]:
 
 def _configure_cast_map():
     cast_map = dd(lambda: None)
-    cast_map[Union] = union_cast
-    cast_map[Collection] = collection_cast
-    cast_map[abc.Collection] = cast_map[Collection]
-    cast_map[Optional] = optional_cast
-    cast_map[Literal] = literal_cast
-    cast_map[Tuple] = tuple_cast
-    cast_map[tuple] = tuple_cast
-    cast_map[Sequence] = sequence_cast
-    cast_map[abc.Sequence] = cast_map[Sequence]
+    cast_map['Union'] = union_cast
+    cast_map['Collection'] = collection_cast
+    cast_map['Optional'] = optional_cast
+    cast_map['Literal'] = literal_cast
+    cast_map['Tuple'] = tuple_cast
+    cast_map['Sequence'] = sequence_cast
     return cast_map
 
 
