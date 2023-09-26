@@ -103,8 +103,6 @@ def union_cast(data: str, typecast):
             continue
         else:
             try:
-                if isinstance(data, typ):
-                    return data
                 cast_data = type_wrangler(data, typ)
                 # Check for literals
                 if type(typ) is type(Literal["0"]):
