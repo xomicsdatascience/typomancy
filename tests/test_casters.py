@@ -139,6 +139,11 @@ class TestTypings(unittest.TestCase):
         cast = type_wrangler(value, Union[int, str])
         self.assertEqual(cast, "2.2")
         self.assertRaises(TypeError, type_wrangler, value, Union[int, bool])
+
+        # Testing nested typing
+        value = "chicken"
+        cast = type_wrangler(value, Union[int, float, Literal["turkey", "chicken", "emu"]])
+        self.assertEqual(cast, "chicken")
         return
 
     def test_Collection(self):
