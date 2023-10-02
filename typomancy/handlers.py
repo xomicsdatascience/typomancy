@@ -108,7 +108,9 @@ def union_cast(data: str, typecast):
                 if type(typ) is type(Literal["0"]):
                     # If data was not successfully cast, it will have raised an error; no need to re-check here
                     return cast_data
-                if type(cast_data) == typ or issubclass(type(cast_data), typ):
+                elif type(cast_data) == typ:
+                    return cast_data
+                elif "__origin__" in typ.__dict__ and issubclass(type(cast_data), typ.__origin__):
                     return cast_data
             except TypeError:
                 continue
@@ -132,6 +134,8 @@ def collection_cast(data: str, typecast):
     # Separate elements by ','; use \ as escape char.
     if isinstance(data, str):
         split_data = split_with_escape(data, split_char=",", escape_char="\\")
+    else:
+        split_data = data
     cast_collection = []
     for entry in split_data:
         cast_entry = type_wrangler(entry, typecast.__args__[0])  # Collection only takes 1 arg
@@ -172,10 +176,15 @@ def tuple_cast(data: str, typecast):
 def sequence_cast(data: str, typecast):
     # Sequence is an ordered Collection
     # Collection casts to list, which is a sequence; just pass it to Collection
-    tmp_typ = Collection
-    if "__args__" in dir(typecast):
-        tmp_typ.__args__ = typecast.__args__
-    return type_wrangler(data, tmp_typ)
+    if isinstance(data, str):
+        split_data = split_with_escape(data, split_char=",", escape_char="\\")
+    else:
+        split_data = data
+    cast_collection = []
+    for entry in split_data:
+        cast_entry = type_wrangler(entry, typecast.__args__[0])  # Sequence only takes 1 arg
+        cast_collection.append(cast_entry)
+    return cast_collection
 
 
 def split_with_escape(str_to_split: str, split_char: str = ",", escape_char="\\") -> list[str]:
