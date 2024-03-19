@@ -1,6 +1,6 @@
 from ast import literal_eval
 from collections import defaultdict as dd
-from typing import Union, Collection, Optional, Literal, Tuple, Sequence
+from typing import Union, Collection, Optional, Literal, Tuple, Sequence, Mapping, Dict
 from types import NoneType
 from collections import abc
 
@@ -185,6 +185,19 @@ def sequence_cast(data: str, typecast):
         cast_entry = type_wrangler(entry, typecast.__args__[0])  # Sequence only takes 1 arg
         cast_collection.append(cast_entry)
     return cast_collection
+
+def mapping_cast(data: str, typecast):
+    split_data = split_with_escape(data, split_char=",", escape_char="\\")
+    cast_mapping = dict()
+    for entry in split_data:
+        key, value = entry.split(":")
+        cast_key = type_wrangler(key.strip(), typecast.__args__[0])
+        cast_value = type_wrangler(value.strip(), typecast.__args__[1])
+        cast_mapping[cast_key] = cast_value
+    return cast_mapping
+
+def dict_cast(data: str, typecast):
+    return mapping_cast(data, typecast)
 
 
 def split_with_escape(str_to_split: str, split_char: str = ",", escape_char="\\") -> list[str]:
