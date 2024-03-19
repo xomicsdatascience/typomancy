@@ -1,5 +1,5 @@
 import unittest
-from typing import Union, Collection, Optional, Literal, Tuple, Sequence
+from typing import Union, Collection, Optional, Literal, Tuple, Sequence, Mapping, Dict
 from typomancy.handlers import type_wrangler
 
 
@@ -222,7 +222,7 @@ class TestTypings(unittest.TestCase):
         self.assertRaises(TypeError, type_wrangler, (value, Tuple[int, int]))
         return
 
-    def test_Sequnce(self):
+    def test_Sequence(self):
         value = "1,2,3,4"
         cast = type_wrangler(value, Sequence[int])
         self.assertEqual(cast, [1,2,3,4])
@@ -231,4 +231,30 @@ class TestTypings(unittest.TestCase):
         value = "1,a,2,b"
         cast = type_wrangler(value, Sequence[Union[int, str]])
         self.assertEqual(cast, [1, "a", 2, "b"])
+        return
+
+    def test_Mapping(self):
+        value = "thing: 1, thing2:2"
+        cast = type_wrangler(value, Mapping[str, int])
+        self.assertEqual(cast, {"thing": 1, "thing2": 2})
+        cast = type_wrangler(value, Mapping[str, str])
+        self.assertEqual(cast, {"thing": "1", "thing2": "2"})
+        value = "1: thing, 2: other, 3:thingthing"
+        cast = type_wrangler(value, Mapping[int, str])
+        self.assertEqual(cast, {1: "thing", 2: "other", 3: "thingthing"})
+        cast = type_wrangler(value, Mapping[str, str])
+        self.assertEqual(cast, {"1": "thing", "2": "other", "3": "thingthing"})
+        return
+
+    def test_Dict(self):
+        value = "thing: 1, thing2:2"
+        cast = type_wrangler(value, Dict[str, int])
+        self.assertEqual(cast, {"thing": 1, "thing2": 2})
+        cast = type_wrangler(value, Dict[str, str])
+        self.assertEqual(cast, {"thing": "1", "thing2": "2"})
+        value = "1: thing, 2: other, 3:thingthing"
+        cast = type_wrangler(value, Dict[int, str])
+        self.assertEqual(cast, {1: "thing", 2: "other", 3: "thingthing"})
+        cast = type_wrangler(value, Dict[str, str])
+        self.assertEqual(cast, {"1": "thing", "2": "other", "3": "thingthing"})
         return
