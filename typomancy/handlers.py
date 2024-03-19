@@ -241,6 +241,8 @@ def _configure_cast_map():
     cast_map['Literal'] = literal_cast
     cast_map['Tuple'] = tuple_cast
     cast_map['Sequence'] = sequence_cast
+    cast_map['Mapping'] = mapping_cast
+    cast_map['Dict'] = dict_cast
     return cast_map
 
 
