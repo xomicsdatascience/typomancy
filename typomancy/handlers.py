@@ -1,6 +1,7 @@
 from ast import literal_eval
 from collections import defaultdict as dd
 from typing import Union, Collection, Optional, Literal, Tuple, Sequence, Mapping, Dict
+import math
 from types import NoneType
 from collections import abc
 
@@ -33,6 +34,11 @@ def type_wrangler(input_data: str,
             if typecast is bool:
                 # JS has lower-case bools; need to check against that
                 input_data = input_data[0].upper() + input_data[1:].lower()
+            if typecast is float or typecast is int or typecast is complex:
+                if input_data.lower() == "inf" or input_data.lower() == "infinity":
+                    return math.inf
+                elif input_data.lower() == "-inf" or input_data.lower() == "-infinity":
+                    return -math.inf
             cast_data = literal_eval(input_data)  # "13" resolves to int, even if it would be fine as a float
             try:
                 tmp_cast = typecast(cast_data)
