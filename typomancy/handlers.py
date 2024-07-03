@@ -39,7 +39,11 @@ def type_wrangler(input_data: str,
                     return math.inf
                 elif input_data.lower() == "-inf" or input_data.lower() == "-infinity":
                     return -math.inf
-            cast_data = literal_eval(input_data)  # "13" resolves to int, even if it would be fine as a float
+            try:
+                cast_data = literal_eval(input_data)  # "13" resolves to int, even if it would be fine as a float
+            except Exception as e:
+                print(f"Error converting {input_data} to type {typecast}")
+                raise e
             try:
                 tmp_cast = typecast(cast_data)
                 if _isequal(cast_data, tmp_cast):  # if there's no loss of data, do conversion; otherwise fail
