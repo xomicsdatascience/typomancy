@@ -42,7 +42,6 @@ def type_wrangler(input_data: str,
             try:
                 cast_data = literal_eval(input_data)  # "13" resolves to int, even if it would be fine as a float
             except Exception as e:
-                print(f"Error converting {input_data} to type {typecast}")
                 raise e
             try:
                 tmp_cast = typecast(cast_data)
@@ -62,6 +61,8 @@ def type_wrangler(input_data: str,
                 return cast_data
         except ValueError:  # be nice and assume that the error is in the type, not the user's input
             raise TypeError(f"Unable to convert input of type {type(input_data)} to {typecast}")
+        except Exception as e:
+            raise e
     elif _istyping(typecast):
         # Try to do casting
         caster = cast_map[typecast.__name__]
